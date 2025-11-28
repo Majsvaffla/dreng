@@ -8,8 +8,11 @@ logger = logging.getLogger(__name__)
 
 @click.command
 def main() -> None:
+    import django
     from django.conf import settings
     from django.core.exceptions import ImproperlyConfigured
+
+    django.setup()
 
     from dreng.models import Job
     from dreng.utils import import_task
