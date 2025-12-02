@@ -14,15 +14,12 @@ import time_machine
 from django.core.cache import cache
 from django.utils import timezone
 
-from dreng.constants import (
-    CLAIM_COUNT_LIMIT,
-    STATUS_FAILURE,
-    STATUS_PENDING,
-    STATUS_SUCCESS,
-)
+from dreng.constants import (CLAIM_COUNT_LIMIT, STATUS_FAILURE, STATUS_PENDING,
+                             STATUS_SUCCESS)
 from dreng.exceptions import SilentFail
 from dreng.models import FailedJob, Job, TaskState
 from dreng.utils import get_claim_count_cache_key
+from tests.helpers import datetime_utc
 
 if TYPE_CHECKING:
     from dreng.decorators import TaskDecorator
@@ -309,12 +306,12 @@ class Test_delivery:
     ["point_in_time", "expected_execute_at"],
     [
         (
-            datetime.datetime(2024, 10, 3, 8, tzinfo=ZoneInfo("Europe/Stockholm")),
-            datetime.datetime(2024, 10, 3, 10, 30, tzinfo=ZoneInfo("Europe/Stockholm")),
+            datetime_utc(2024, 10, 3, 8),
+            datetime_utc(2024, 10, 3, 10, 30),
         ),
         (
-            datetime.datetime(2024, 10, 3, 12, tzinfo=ZoneInfo("Europe/Stockholm")),
-            datetime.datetime(2024, 10, 4, 10, 30, tzinfo=ZoneInfo("Europe/Stockholm")),
+            datetime_utc(2024, 10, 3, 12),
+            datetime_utc(2024, 10, 4, 10, 30),
         ),
     ],
 )

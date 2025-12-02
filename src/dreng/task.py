@@ -7,7 +7,6 @@ from contextlib import ExitStack
 from dataclasses import dataclass
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Literal, NotRequired, TypedDict
-from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -152,13 +151,13 @@ class Task:
         # self._repeat_at is either timedelta, time or None
         if self._repeat_at is None:
             return None
-        _now = timezone.now()
+        local_now = timezone.localtime()
         if isinstance(self._repeat_at, timedelta):
-            return _now + self._repeat_at
+            return local_now + self._repeat_at
         execute_at = datetime.datetime.combine(
-            date=_now.date(), time=self._repeat_at, tzinfo=ZoneInfo("Europe/Stockholm")
+            date=local_now.date(), time=self._repeat_at, tzinfo=timezone.get_current_timezone()
         )
-        if execute_at < _now:
+        if execute_at <= local_now:
             return execute_at + timedelta(days=1)
         return execute_at
 
