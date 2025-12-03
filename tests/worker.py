@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import datetime
 import logging
+import os
+import subprocess
 import time
 import uuid
 from datetime import timedelta
+from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import Mock, patch
 from zoneinfo import ZoneInfo
@@ -394,3 +397,24 @@ def test_unable_to_check_claim_count(worker: Worker, mock_task: TaskDecorator) -
 
     job = Job.objects.get()
     assert job.execute_at == datetime.datetime(2025, 4, 4, 0, 0, 10, tzinfo=ZoneInfo("Europe/Stockholm"))
+
+
+@pytest.mark.django_db
+def test_database_exception() -> None:
+    worker_process = subprocess.Popen(
+        ["dreng", "tests"],
+        cwd=Path(__file__).parent.parent,
+        env={
+            **os.environ,
+            "PYTHONPATH": ".",
+            "DJANGO_SETTINGS_MODULE": "tests_django_project.settings.dummy_db_backend",
+        },
+        text=True,
+        encoding="utf8",
+        stderr=subprocess.PIPE,
+    )
+    time.sleep(1)
+    worker_process.kill()
+    assert worker_process.stderr is not None
+    stderr = worker_process.stderr.read().strip()
+    assert "Unable to run available jobs due to OperationalError." in stderr

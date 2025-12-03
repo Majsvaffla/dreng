@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Literal, assert_never
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db import OperationalError, close_old_connections, transaction
+from django.db import close_old_connections, transaction
 from django.utils import timezone
 from django.utils.module_loading import import_string
 
@@ -43,6 +43,9 @@ type DequeueResult = Literal[
 
 CACHE_EXCEPTIONS: tuple[type[Exception], ...] = tuple(
     import_string(e) for e in getattr(settings, "DRENG_CACHE_EXCEPTIONS", [])
+)
+DATABASE_EXCEPTIONS: tuple[type[Exception], ...] = tuple(
+    import_string(e) for e in getattr(settings, "DRENG_DATABASE_EXCEPTIONS", [])
 )
 
 
@@ -188,9 +191,9 @@ class Worker:
 
                 try:
                     self.run_available_tasks()
-                except OperationalError as e:
+                except DATABASE_EXCEPTIONS as e:
                     logger.info(
-                        "Unable to run available jobs due to OperationalError.",
+                        f"Unable to run available jobs due to {e.__class__.__name__}.",
                         extra={"exception": e},
                     )
 
