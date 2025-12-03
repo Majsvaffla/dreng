@@ -14,8 +14,7 @@ import time_machine
 from django.core.cache import cache
 from django.utils import timezone
 
-from dreng.constants import (CLAIM_COUNT_LIMIT, STATUS_FAILURE, STATUS_PENDING,
-                             STATUS_SUCCESS)
+from dreng.constants import CLAIM_COUNT_LIMIT, STATUS_FAILURE, STATUS_PENDING, STATUS_SUCCESS
 from dreng.exceptions import SilentFail
 from dreng.models import FailedJob, Job, TaskState
 from dreng.utils import get_claim_count_cache_key

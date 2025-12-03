@@ -60,7 +60,7 @@ django_settings_module = "example_django_project.settings"
 
 [tool.pytest.ini_options]
 python_files = "tests/*.py"
-addopts = "--ds='example_django_project.settings'"
+addopts = "--ds='tests_django_project.settings.postgresql'"
 
 [tool.ruff]
 line-length = 120
