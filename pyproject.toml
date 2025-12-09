@@ -9,7 +9,7 @@ classifiers = [
 ]
 dependencies = [
   "click",
-  "django==5.2.3",
+  "django>=5.2",
   "psycopg2>=2.9.10",
 ]
 description = "A backend for Django's Tasks framework backed by PostgreSQL."
