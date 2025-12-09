@@ -1,66 +1,66 @@
 [project]
-name = "dreng"
-description = "A backend for Django's Tasks framework backed by PostgreSQL."
-version = "0.0.1"
-requires-python = ">=3.13"
-dependencies = [
-    "click",
-    "django==5.2.3",
-    "psycopg2>=2.9.10",
-]
-authors = [{ name = "David Svenson", email = "davidsvenson@outlook.com" }]
-license = "MIT"
+authors = [{name = "David Svenson", email = "davidsvenson@outlook.com"}]
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "Intended Audience :: Developers",
-    "Development Status :: 3 - Alpha",
-    "Operating System :: OS Independent",
-    "Typing :: Typed",
+  "Programming Language :: Python :: 3",
+  "Intended Audience :: Developers",
+  "Development Status :: 3 - Alpha",
+  "Operating System :: OS Independent",
+  "Typing :: Typed",
 ]
+dependencies = [
+  "click",
+  "django==5.2.3",
+  "psycopg2>=2.9.10",
+]
+description = "A backend for Django's Tasks framework backed by PostgreSQL."
+license = "MIT"
+name = "dreng"
+requires-python = ">=3.13"
+version = "0.0.1"
 
 [project.scripts]
 dreng = "dreng.scripts.worker:main"
-task-timer = "dreng.scripts.timer:main"
 start-repeating-tasks = "dreng.scripts.start_repeating_tasks:main"
+task-timer = "dreng.scripts.timer:main"
 
 [build-system]
-requires = ["setuptools>=64", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
+requires = ["setuptools>=64", "setuptools-scm>=8"]
 
 [tool.setuptools_scm]
 
 [dependency-groups]
 dev = [
-    "ruff",
-    { include-group = "tests" },
-    { include-group = "typing" },
-]
-typing = [
-    "django-stubs",
-    "mypy",
+  "ruff",
+  {include-group = "tests"},
+  {include-group = "typing"},
 ]
 tests = [
-    "pytest",
-    "pytest-django",
-    "time-machine",
+  "pytest",
+  "pytest-django",
+  "time-machine",
+]
+typing = [
+  "django-stubs",
+  "mypy",
 ]
 
 [tool.mypy]
-strict = true
-strict_equality = true
-disallow_untyped_calls = true
 disallow_incomplete_defs = true
+disallow_untyped_calls = true
 disallow_untyped_defs = true
-warn_unused_ignores = true
 packages = ["dreng", "tests"]
 plugins = ["mypy_django_plugin.main"]
+strict = true
+strict_equality = true
+warn_unused_ignores = true
 
 [tool.django-stubs]
 django_settings_module = "example_django_project.settings"
 
 [tool.pytest.ini_options]
-python_files = "tests/*.py"
 addopts = "--ds='tests_django_project.settings.postgresql'"
+python_files = "tests/*.py"
 
 [tool.ruff]
 line-length = 120
@@ -70,46 +70,46 @@ docstring-code-format = true
 
 [tool.ruff.lint]
 select = [
-    "B",        # flake8-bugbear
-    "C4",       # flake8-comprehensions
-    "DJ",       # flake8-django
-    "DTZ",      # flake8-datetimez
-    "E",        # pycodestyle Error
-    "F",        # Pyflakes
-    "G",        # flake8-logging-format
-    "I",        # isort
-    "ISC",      # flake8-implicit-str-concat
-    "LOG",      # flake8-logging
-    "PERF",     # perflint
-    "PGH",      # pygrep-hooks
-    "PIE",      # flake8-pie
-    "Q",        # flake8-quotes
-    "RUF008",   # mutable-dataclass-default
-    "RUF009",   # function-call-in-dataclass-default-argument
-    "RUF022",   # unsorted-dunder-all
-    "RUF034",   # useless-if-else
-    "RUF100",   # unused-noqa
-    "RUF200",   # invalid-pyproject-toml
-    "SIM",      # flake8-simplify
-    "T20",      # flake8-print
-    "TC",       # flake8-type-checking
-    "TID",      # flake8-tidy-imports
-    "UP",       # pyupgrade
-    "W",        # pycodestyle Warning
+  "B",
+  "C4",
+  "DJ",
+  "DTZ",
+  "E",
+  "F",
+  "G",
+  "I",
+  "ISC",
+  "LOG",
+  "PERF",
+  "PGH",
+  "PIE",
+  "Q",
+  "RUF008",
+  "RUF009",
+  "RUF022",
+  "RUF034",
+  "RUF100",
+  "RUF200",
+  "SIM",
+  "T20",
+  "TC",
+  "TID",
+  "UP",
+  "W",
 ]
 
 ignore = [
-    "G004",
+  "G004",
 ]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
 section-order = [
-    "future",
-    "standard-library",
-    "third-party",
-    "first-party",
-    "local-folder",
+  "future",
+  "standard-library",
+  "third-party",
+  "first-party",
+  "local-folder",
 ]
 
 [tool.ruff.lint.flake8-tidy-imports]
