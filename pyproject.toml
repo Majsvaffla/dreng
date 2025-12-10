@@ -36,6 +36,7 @@ dev = [
   {include-group = "typing"},
 ]
 tests = [
+  "dj-database-url>=3.0.1",
   "pytest",
   "pytest-django",
   "time-machine",
@@ -59,7 +60,7 @@ warn_unused_ignores = true
 django_settings_module = "example_django_project.settings"
 
 [tool.pytest.ini_options]
-addopts = "--ds='tests_django_project.settings.postgresql'"
+DJANGO_SETTINGS_MODULE = "tests_django_project.settings.postgresql"
 python_files = "tests/*.py"
 
 [tool.ruff]

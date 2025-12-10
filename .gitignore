@@ -3,3 +3,4 @@ dist/
 *.egg-info/
 .venv
 .*_cache/
+uv.lock
