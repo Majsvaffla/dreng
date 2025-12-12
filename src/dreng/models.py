@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Final, Literal, TypedDict
 from uuid import UUID, uuid4
@@ -9,6 +8,7 @@ from django.contrib.postgres.functions import TransactionNow
 from django.db import connection, models
 from django.utils import timezone
 
+from . import logging
 from .constants import STATUS_FAILURE
 from .utils import JSONDecoder, JSONEncoder, import_task
 

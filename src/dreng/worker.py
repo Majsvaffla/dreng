@@ -1,7 +1,6 @@
 # cspell: words noreload
 from __future__ import annotations
 
-import logging
 import signal
 import time
 from datetime import timedelta
@@ -13,6 +12,7 @@ from django.db import close_old_connections, transaction
 from django.utils import timezone
 from django.utils.module_loading import import_string
 
+from . import logging
 from .constants import CLAIM_COUNT_LIMIT, STATUS_FAILURE, STATUS_SUCCESS
 from .models import FailedJob, Job
 from .signals import after_job_finished, after_task_imported

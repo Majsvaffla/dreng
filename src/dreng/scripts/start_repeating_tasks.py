@@ -1,7 +1,8 @@
-import logging
 from datetime import timedelta
 
 import click
+
+from dreng import logging
 
 logger = logging.getLogger(__name__)
 
