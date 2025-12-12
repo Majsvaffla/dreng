@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-import logging
 import random
 from contextlib import ExitStack
 from dataclasses import dataclass
@@ -13,6 +12,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
 from django.utils import timezone
 
+from . import logging
 from .exceptions import SilentFail
 from .signals import before_task_run
 

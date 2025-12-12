@@ -4,7 +4,6 @@ from __future__ import annotations
 import contextlib
 import datetime
 import json
-import logging
 import signal
 from dataclasses import dataclass
 from datetime import timedelta
@@ -13,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Literal, Protocol, TypedDict, TypeIs, Typ
 
 from django.utils.module_loading import import_string
 
+from . import logging
 from .exceptions import TimeLimitReached
 
 __all__ = ["Decoded", "JSONDecoder", "JSONEncoder", "TimeLimit", "get_claim_count_cache_key", "import_task"]

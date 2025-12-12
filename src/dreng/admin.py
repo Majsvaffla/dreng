@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from django.contrib import admin, messages
@@ -8,6 +7,7 @@ from django.db.models import QuerySet, TextChoices
 from django.urls import reverse
 from django.utils import timezone
 
+from . import logging
 from .constants import Priority
 from .models import BaseJob, FailedJob, Job
 from .utils import import_task
