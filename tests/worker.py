@@ -42,7 +42,7 @@ class Test_run_available_tasks:
             pass
 
         stateless_task.enqueue()
-        assert Job.objects.filter(task="worker.stateless_task").first()
+        assert Job.objects.filter(task="tests.worker.stateless_task").first()
 
         worker.run_available_tasks()
         assert not Job.objects.exists()
@@ -53,7 +53,7 @@ class Test_run_available_tasks:
             return {"some": "data"}
 
         enqueued_task = stateful_task.enqueue()
-        assert Job.objects.filter(task="worker.stateful_task").first()
+        assert Job.objects.filter(task="tests.worker.stateful_task").first()
 
         worker.run_available_tasks()
 
@@ -88,7 +88,7 @@ class Test_run_available_tasks:
         worker.run_available_tasks()
 
         assert not Job.objects.exists()
-        failed_job = FailedJob.objects.get(task="worker.stateful_task_that_throws")
+        failed_job = FailedJob.objects.get(task="tests.worker.stateful_task_that_throws")
         assert failed_job.failure_reason == "exception"
         assert failed_job.job_id == enqueued_task.job.id
 
@@ -116,7 +116,7 @@ class Test_run_available_tasks:
         worker.run_available_tasks()
 
         assert not Job.objects.exists()
-        failed_job = FailedJob.objects.get(task="worker.stateless_task_that_throws")
+        failed_job = FailedJob.objects.get(task="tests.worker.stateless_task_that_throws")
         assert failed_job.failure_reason == "exception"
         assert failed_job.job_id == enqueued_task.job.id
 
@@ -136,7 +136,7 @@ class Test_run_available_tasks:
 
         expire_at = timezone.now() - timedelta(minutes=1)
         expired_task.enqueue(expire_at=expire_at)
-        job = Job.objects.get(task="worker.expired_task")
+        job = Job.objects.get(task="tests.worker.expired_task")
         worker.run_available_tasks()
 
         assert not mock.whatever.called
@@ -157,7 +157,7 @@ class Test_run_available_tasks:
         job = Job.objects.get()
         worker.run_available_tasks()
 
-        retried_job = Job.objects.get(task="worker.retrying_task")
+        retried_job = Job.objects.get(task="tests.worker.retrying_task")
         assert job.id != retried_job.id
         assert retried_job.retry_count == 1
         assert retried_job.execute_at > job.execute_at
@@ -184,20 +184,21 @@ def test_task_that_exceeds_its_time_limit(
         time.sleep(5)
 
     enqueued_task = task_that_exceeds_its_time_limit.enqueue()
-    Job.objects.get(task="worker.task_that_exceeds_its_time_limit")
+    Job.objects.get(task="tests.worker.task_that_exceeds_its_time_limit")
 
     worker.run_available_tasks()
     log_records = [
         r.message
         for r in caplog.records
         if (
-            r.message == "worker.task_that_exceeds_its_time_limit reached its time limit" and r.levelno == logging.ERROR
+            r.message == "tests.worker.task_that_exceeds_its_time_limit reached its time limit"
+            and r.levelno == logging.ERROR
         )
     ]
     assert len(log_records) == 1
 
     assert not Job.objects.exists()
-    failed_job = FailedJob.objects.get(task="worker.task_that_exceeds_its_time_limit")
+    failed_job = FailedJob.objects.get(task="tests.worker.task_that_exceeds_its_time_limit")
     assert failed_job.failure_reason == "exception"
     assert failed_job.job_id == enqueued_task.job.id
 
@@ -211,7 +212,7 @@ def test_time_limit_warning(worker: Worker, mock_task: TaskDecorator, caplog: py
         time.sleep(3)
 
     task_that_takes_an_unexpectedly_long_time.enqueue()
-    Job.objects.get(task="worker.task_that_takes_an_unexpectedly_long_time")
+    Job.objects.get(task="tests.worker.task_that_takes_an_unexpectedly_long_time")
 
     worker.run_available_tasks()
     log_records = [
@@ -237,12 +238,12 @@ class Test_delivery:
             raise AssertionError
 
         enqueued_task = atomic_task.enqueue()
-        job = Job.objects.get(task="worker.atomic_task")
+        job = Job.objects.get(task="tests.worker.atomic_task")
 
         worker.run_available_tasks()
 
         assert not Job.objects.exists()
-        failed_job = FailedJob.objects.get(task="worker.atomic_task")
+        failed_job = FailedJob.objects.get(task="tests.worker.atomic_task")
         assert failed_job.failure_reason == "exception"
         assert failed_job.job_id == job.id == enqueued_task.job.id
 
@@ -259,12 +260,12 @@ class Test_delivery:
             raise AssertionError
 
         enqueued_task = non_atomic_task.enqueue()
-        job = Job.objects.get(task="worker.non_atomic_task")
+        job = Job.objects.get(task="tests.worker.non_atomic_task")
 
         worker.run_available_tasks()
 
         assert not Job.objects.exists()
-        failed_job = FailedJob.objects.get(task="worker.non_atomic_task")
+        failed_job = FailedJob.objects.get(task="tests.worker.non_atomic_task")
         assert failed_job.failure_reason == "exception"
         assert failed_job.job_id == job.id == enqueued_task.job.id
 
