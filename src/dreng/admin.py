@@ -18,7 +18,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from datetime import datetime
 
-    from django import forms
     from django.http import HttpRequest
 
 logger = logging.getLogger(__name__)
@@ -130,21 +129,6 @@ class JobAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
             "args",
             queue,  # type: ignore[list-item]
         ]
-
-    def save_model(self, request: HttpRequest, obj: Job, form: forms.Form, change: bool) -> None:
-        assert form.is_valid()
-        logger.info(
-            "Save job manually", extra={"job": obj.as_dict(), "change": change, "cleaned_data": form.cleaned_data}
-        )
-        return super().save_model(request, obj, form, change)
-
-    def delete_model(self, request: HttpRequest, obj: Job) -> None:
-        logger.info("Delete job manually", extra={"job": obj.as_dict()})
-        return super().delete_model(request, obj)
-
-    def delete_queryset(self, request: HttpRequest, queryset: QuerySet[Job]) -> None:
-        logger.info("Delete jobs manually", extra={"job_ids": list(queryset.values_list("id", flat=True))})
-        return super().delete_queryset(request, queryset)
 
 
 admin.site.register(Job, JobAdmin)
