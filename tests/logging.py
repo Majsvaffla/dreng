@@ -1,8 +1,10 @@
 from typing import Any
 
 import pytest
+from django.contrib.postgres.functions import TransactionNow
 
 from dreng import logging
+from tests.helpers import datetime_utc
 
 
 @pytest.mark.parametrize(
@@ -15,6 +17,26 @@ from dreng import logging
         (
             {"slack": {"chill": True}},
             {},
+        ),
+        (
+            {
+                "slack": {"chill": True},
+                "job": {
+                    "created_at": datetime_utc(2025, 12, 25, 13, 37),
+                    "execute_at": datetime_utc(2025, 12, 24, 14, 47),
+                },
+            },
+            {"created_at": datetime_utc(2025, 12, 25, 13, 37), "execute_at": datetime_utc(2025, 12, 24, 14, 47)},
+        ),
+        (
+            {
+                "slack": {"chill": True},
+                "job": {
+                    "created_at": TransactionNow(),
+                    "execute_at": TransactionNow(),
+                },
+            },
+            {"created_at": None, "execute_at": None},
         ),
     ],
 )
