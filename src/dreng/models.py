@@ -22,8 +22,8 @@ if TYPE_CHECKING:
 
     class JobDict(TypedDict):
         id: int
-        created_at: datetime
-        execute_at: datetime
+        created_at: datetime | TransactionNow
+        execute_at: datetime | TransactionNow
         priority: int
         task: str
         args: dict[str, Decoded]
