@@ -10,8 +10,8 @@ __all__ = ["INFO", "WARNING", "getLogger"]
 
 class JobArgsFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> logging.LogRecord:
-        if (job := getattr(record, "job", {})) and isinstance(job, dict) and (args := job.get("args")):
-            job["args"] = str(args)[:1000]  # Avoid "overflowing" logging infrastructure.
+        if (job := getattr(record, "job", {})) and isinstance(job, dict) and "args" in job:
+            job["args"] = str(job["args"])[:1000]  # Avoid "overflowing" logging infrastructure.
         return record
 
 
