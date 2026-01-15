@@ -29,7 +29,11 @@ def priority(job: Job) -> str:
 
 
 def _format_datetime(dt: datetime) -> str:
-    return dt.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    # Make sure we're using local time:
+    timezone_aware = timezone.localtime(dt)
+    # Remove tzinfo to avoid UTC offset in output:
+    timezone_naive = timezone.make_naive(timezone_aware)
+    return timezone_naive.isoformat(sep=" ", timespec="milliseconds")
 
 
 @admin.display(ordering="execute_at")
