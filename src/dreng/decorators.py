@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, overload
+from typing import TYPE_CHECKING, Any, Literal, overload
+
+from django.tasks import DEFAULT_TASK_BACKEND_ALIAS, task_backends
 
 from .constants import (
     DEFAULT_WARN_RETRIES,
@@ -15,6 +17,8 @@ __all__ = ["StatefulEnqueuedTask", "StatefulTask", "StatelessEnqueuedTask", "Sta
 if TYPE_CHECKING:
     import datetime
     from collections.abc import Callable
+
+    import django.tasks
 
     from .constants import Delivery
     from .task import ExceptionSequence, TaskFunction
@@ -35,6 +39,23 @@ class StatelessEnqueuedTask(EnqueuedTask):
 
 
 class StatefulTask(Task):
+    @classmethod
+    def from_django_task(cls, task: django.tasks.Task[Any, Any]) -> StatefulTask:
+        from .backends import DrengBackend
+        from .utils import TimeLimit
+
+        backend = task.get_backend()
+        assert isinstance(backend, DrengBackend)
+        return cls(
+            task_function=task.func,
+            retry_exceptions=(),
+            priority=Priority(task.priority),
+            delivery=backend.default_delivery,
+            queue=task.queue_name,
+            time_limit=TimeLimit.__DangerouslyDisableTimeLimit__(),
+            backend=backend,
+        )
+
     def enqueue(
         self,
         *task_args: Decoded,
@@ -76,6 +97,7 @@ def task(
     time_limit: datetime.timedelta,
     repeat_at: datetime.timedelta | datetime.time | None = None,
     queue: str,
+    backend_alias: str = DEFAULT_TASK_BACKEND_ALIAS,
 ) -> Callable[[TaskFunction], StatelessTask]: ...
 
 
@@ -89,6 +111,7 @@ def task(
     time_limit: datetime.timedelta,
     repeat_at: None = None,
     queue: str,
+    backend_alias: str = DEFAULT_TASK_BACKEND_ALIAS,
 ) -> Callable[[TaskFunction], StatelessTask]: ...
 
 
@@ -102,6 +125,7 @@ def task(
     delivery: Delivery,
     time_limit: datetime.timedelta,
     queue: str,
+    backend_alias: str = DEFAULT_TASK_BACKEND_ALIAS,
 ) -> Callable[[TaskFunction], StatefulTask]: ...
 
 
@@ -115,7 +139,13 @@ def task(
     time_limit: datetime.timedelta,
     repeat_at: datetime.timedelta | datetime.time | None = None,
     queue: str,
+    backend_alias: str = DEFAULT_TASK_BACKEND_ALIAS,
 ) -> Callable[[TaskFunction], Task]:
+    from .backends import DrengBackend
+
+    backend = task_backends[backend_alias]
+    assert isinstance(backend, DrengBackend)
+
     def decorator(f: TaskFunction) -> Task:
         if keep_state:
             assert repeat_at is None
@@ -127,6 +157,7 @@ def task(
                 time_limit=time_limit,
                 delivery=delivery,
                 queue=queue,
+                backend=backend,
             )
         else:
             return StatelessTask(
@@ -138,6 +169,7 @@ def task(
                 delivery=delivery,
                 repeat_at=repeat_at,
                 queue=queue,
+                backend=backend,
             )
 
     return decorator
