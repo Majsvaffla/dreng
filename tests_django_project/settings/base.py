@@ -12,14 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from __future__ import annotations
 
-from datetime import timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dreng.queue import Queue
-
-from dreng.utils import TimeLimit
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -137,15 +130,14 @@ LOGGING = {
 }
 
 
-# Dreng-specific settings
-DRENG_QUEUES = [
-    "tests",
-]
-DRENG_REPEATING_TASKS: set[str] = set()
-DRENG_DEFAULT_TIME_LIMITS_BY_QUEUE: dict[Queue, TimeLimit] = {
-    # Dict entry 0 has incompatible type "Literal['tests']": "TimeLimit"; expected "Literal['background', 'interactive']": "TimeLimit"  # noqa: E501
-    "tests": TimeLimit(max=timedelta(seconds=2), excessive_time_factor=2),  # type: ignore[dict-item]
-}
-DRENG_CACHE_EXCEPTIONS: set[str] = {
-    "django.core.cache.backends.base.InvalidCacheBackendError",
+# Task-specific settings
+TASKS = {
+    "default": {
+        "BACKEND": "dreng.PostgreSQLBackend",
+        "OPTIONS": {
+            "cache_exceptions": {
+                "django.core.cache.backends.base.InvalidCacheBackendError",
+            },
+        },
+    }
 }

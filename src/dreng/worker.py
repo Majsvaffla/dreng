@@ -6,11 +6,9 @@ import time
 from datetime import timedelta
 from typing import TYPE_CHECKING, Literal, assert_never
 
-from django.conf import settings
 from django.core.cache import cache
 from django.db import close_old_connections, transaction
 from django.utils import timezone
-from django.utils.module_loading import import_string
 
 from . import logging
 from .constants import CLAIM_COUNT_LIMIT, STATUS_FAILURE, STATUS_SUCCESS
@@ -25,6 +23,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
     from types import FrameType
 
+    from .backends import PostgreSQLBackend
     from .constants import TaskStateStatus
     from .models import JobFailureReason
     from .task import Task
@@ -39,13 +38,6 @@ type DequeueResult = Literal[
     "unable_to_import_task",
     "unable_to_check_claim_count",
 ]
-
-CACHE_EXCEPTIONS: tuple[type[Exception], ...] = tuple(
-    import_string(e) for e in getattr(settings, "DRENG_CACHE_EXCEPTIONS", [])
-)
-DATABASE_EXCEPTIONS: tuple[type[Exception], ...] = tuple(
-    import_string(e) for e in getattr(settings, "DRENG_DATABASE_EXCEPTIONS", [])
-)
 
 
 def _log_job_exception(job: Job, exception: BaseException) -> None:
@@ -84,8 +76,9 @@ def _update_state(job: Job, status: TaskStateStatus, data: Mapping[str, Decoded]
 
 
 class Worker:
-    def __init__(self, queues: set[str]) -> None:
+    def __init__(self, queues: set[str], backend: PostgreSQLBackend) -> None:
         self._queues = queues
+        self._backend = backend
         self._shutdown = False
         self._in_task = False
 
@@ -156,7 +149,7 @@ class Worker:
                         return "claim_count_limit_reached"
                     else:
                         cache.incr(cache_key)
-                except CACHE_EXCEPTIONS as e:
+                except self._backend.cache_exceptions as e:
                     logger.info(
                         f"Unable to check claim count due to {e.__class__.__name__}.",
                         extra={"exception": str(e), "job": job.as_dict()},
@@ -190,7 +183,7 @@ class Worker:
 
                 try:
                     self.run_available_tasks()
-                except DATABASE_EXCEPTIONS as e:
+                except self._backend.database_exceptions as e:
                     logger.info(
                         f"Unable to run available jobs due to {e.__class__.__name__}.",
                         extra={"exception": e},

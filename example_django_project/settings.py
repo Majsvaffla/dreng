@@ -12,10 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from __future__ import annotations
 
-from datetime import timedelta
 from pathlib import Path
-
-from dreng.utils import TimeLimit
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -144,25 +141,9 @@ LOGGING = {
 }
 
 
-# Dreng-specific settings
-DRENG_QUEUES = [
-    "background",
-    "interactive",
-]
-DRENG_REPEATING_TASKS: set[str] = set()
-DRENG_DEFAULT_TIME_LIMITS_BY_QUEUE: dict[str, TimeLimit] = {
-    # The max parameter limits the values you may pass to the task decorator.
-    # When a task reaches it's time limit a warning is issued and when it have
-    # exceeded it's time limit by the excessive_time_factor an error is raised.
-    # The values for the max parameter should be less than but aligned with the
-    # Kubernetes terminationGracePeriodSeconds for the respective deployments.
-    #
-    # time_limit set to 15 minutes and excessive_time_factor to 2 will issue a
-    # warning at 15 minutes and error at 30 minutes. Kubernetes will force kill
-    # the pod at 31 minutes but that should never happen in practice.
-    "background": TimeLimit(excessive_time_factor=2, max=timedelta(minutes=15)),
-    # time_limit set to 2.5 minutes and excessive_time_factor to 2 will issue a
-    # warning at 1.25 minutes and error at 5 minutes. Kubernetes will force kill
-    # the pod at 6 minutes but that should never happen in practice.
-    "interactive": TimeLimit(excessive_time_factor=2, max=timedelta(minutes=2, seconds=30)),
+# Task-specific settings
+TASKS = {
+    "default": {
+        "BACKEND": "dreng.PostgreSQLBackend",
+    }
 }
