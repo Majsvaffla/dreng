@@ -21,7 +21,6 @@ version = "0.0.1"
 [project.scripts]
 dreng = "dreng.scripts.worker:main"
 start-repeating-tasks = "dreng.scripts.start_repeating_tasks:main"
-task-timer = "dreng.scripts.timer:main"
 
 [build-system]
 build-backend = "setuptools.build_meta"
