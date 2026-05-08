@@ -15,6 +15,7 @@ from zoneinfo import ZoneInfo
 import pytest
 import time_machine
 from django.core.cache import cache
+from django.tasks import DEFAULT_TASK_QUEUE_NAME
 from django.utils import timezone
 
 from dreng.constants import CLAIM_COUNT_LIMIT, STATUS_FAILURE, STATUS_PENDING, STATUS_SUCCESS
@@ -371,7 +372,7 @@ def test_unable_to_import_task(worker: Worker) -> None:
     initial_execute_at = datetime.datetime(2025, 4, 4, tzinfo=ZoneInfo("Europe/Stockholm"))
     job = Job.objects.create(
         task="not_importable_task",
-        queue="tests",
+        queue=DEFAULT_TASK_QUEUE_NAME,
         execute_at=initial_execute_at,
         args=[],
     )
@@ -403,7 +404,7 @@ def test_unable_to_check_claim_count(worker: Worker, mock_task: TaskDecorator) -
 @pytest.mark.django_db
 def test_database_exception() -> None:
     worker_process = subprocess.Popen(
-        ["dreng", "tests"],
+        ["dreng"],
         cwd=Path(__file__).parent.parent,
         env={
             **os.environ,

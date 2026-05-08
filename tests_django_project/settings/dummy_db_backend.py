@@ -10,6 +10,13 @@ DATABASES = {
     }
 }
 
-DRENG_DATABASE_EXCEPTIONS: set[str] = {
-    "django.db.OperationalError",
+TASKS = {
+    "default": {
+        "BACKEND": "dreng.PostgreSQLBackend",
+        "OPTIONS": {
+            "database_exceptions": {
+                "django.db.OperationalError",
+            },
+        },
+    },
 }

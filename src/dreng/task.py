@@ -7,12 +7,12 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Literal, NotRequired, TypedDict
 
-from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models, transaction
 from django.utils import timezone
 
 from . import logging
+from .constants import Priority
 from .exceptions import SilentFail
 from .signals import before_task_run
 
@@ -21,6 +21,7 @@ __all__ = ["EnqueuedTask", "ExceptionSequence", "Task", "TaskFunction"]
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Mapping, Sequence
 
+    from .backends import PostgreSQLBackend
     from .constants import Delivery, Priority
     from .models import Job, TaskState
     from .utils import Decoded
@@ -68,6 +69,7 @@ class Task:
         delivery: Delivery,
         queue: str,
         time_limit: timedelta,
+        backend: PostgreSQLBackend,
         warn_after_retries: int | None = None,
         repeat_at: timedelta | datetime.time | None = None,
     ) -> None:
@@ -80,20 +82,24 @@ class Task:
         self._repeat_at = repeat_at
         self.queue = queue
         self.import_path = f"{self._task_function.__module__}.{self._task_function.__name__}"
+        self.backend = backend
 
         if repeat_at is not None:
             if delivery == "at_most_once":
                 raise ValueError(f"Repeating task {self.import_path} can't use at-most-once-delivery.")
-            if self.import_path not in settings.DRENG_REPEATING_TASKS:
-                raise ImproperlyConfigured(f"Task {self.import_path} is not in settings.DRENG_REPEATING_TASKS.")
+            if self.import_path not in self.backend.repeating_tasks:
+                raise ImproperlyConfigured(f"Task {self.import_path} is not configured to be repeating.")
 
     def _run(self, job: Job) -> Any:
+        from .utils import TimeLimit
+
         with ExitStack() as stack:
             if self.delivery == "at_least_once":
                 stack.enter_context(transaction.atomic(durable=False))
-            stack.enter_context(
-                settings.DRENG_DEFAULT_TIME_LIMITS_BY_QUEUE[self.queue].as_context_manager(self, job, self.time_limit)
-            )
+            if not isinstance(self.time_limit, TimeLimit.__DangerouslyDisableTimeLimit__):
+                stack.enter_context(
+                    self.backend.default_time_limits_by_queue[self.queue].as_context_manager(self, job, self.time_limit)
+                )
             before_task_run.send("dreng.task", job=job, task=self, stack=stack)
             return self._task_function(**job.args)
 
