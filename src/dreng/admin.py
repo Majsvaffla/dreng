@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from django.conf import settings
 from django.contrib import admin, messages
 from django.db.models import QuerySet, TextChoices
 from django.urls import reverse
@@ -56,10 +57,7 @@ class QueueFilter[T: FailedJob | Job](admin.SimpleListFilter):
     parameter_name = "queue"
 
     def lookups(self, request: HttpRequest, model_admin: admin.ModelAdmin[BaseJob]) -> tuple[tuple[str, str], ...]:
-        return (
-            ("background", "background"),
-            ("interactive", "interactive"),
-        )
+        return tuple((queue, queue) for queue in settings.DRENG_QUEUES)
 
     def queryset(self, request: HttpRequest, queryset: QuerySet[T]) -> QuerySet[T]:
         if self.value() is None:
