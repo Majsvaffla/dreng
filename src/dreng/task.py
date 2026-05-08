@@ -23,7 +23,6 @@ if TYPE_CHECKING:
 
     from .constants import Delivery, Priority
     from .models import Job, TaskState
-    from .queue import Queue
     from .utils import Decoded
 
     type TaskFunction = Callable[..., Any]
@@ -67,7 +66,7 @@ class Task:
         retry_exceptions: ExceptionSequence,
         priority: Priority,
         delivery: Delivery,
-        queue: Queue,
+        queue: str,
         time_limit: timedelta,
         warn_after_retries: int | None = None,
         repeat_at: timedelta | datetime.time | None = None,

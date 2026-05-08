@@ -14,10 +14,6 @@ from __future__ import annotations
 
 from datetime import timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dreng.queue import Queue
 
 from dreng.utils import TimeLimit
 
@@ -154,7 +150,7 @@ DRENG_QUEUES = [
     "interactive",
 ]
 DRENG_REPEATING_TASKS: set[str] = set()
-DRENG_DEFAULT_TIME_LIMITS_BY_QUEUE: dict[Queue, TimeLimit] = {
+DRENG_DEFAULT_TIME_LIMITS_BY_QUEUE: dict[str, TimeLimit] = {
     # The max parameter limits the values you may pass to the task decorator.
     # When a task reaches it's time limit a warning is issued and when it have
     # exceeded it's time limit by the excessive_time_factor an error is raised.

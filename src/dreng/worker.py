@@ -27,7 +27,6 @@ if TYPE_CHECKING:
 
     from .constants import TaskStateStatus
     from .models import JobFailureReason
-    from .queue import Queue
     from .task import Task
     from .utils import Decoded
 
@@ -85,7 +84,7 @@ def _update_state(job: Job, status: TaskStateStatus, data: Mapping[str, Decoded]
 
 
 class Worker:
-    def __init__(self, queues: set[Queue]) -> None:
+    def __init__(self, queues: set[str]) -> None:
         self._queues = queues
         self._shutdown = False
         self._in_task = False

@@ -17,7 +17,6 @@ __all__ = ["FailedJob", "FailedJobDict", "Job", "JobDict", "TaskState", "TaskSta
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping
 
-    from .queue import Queue
     from .utils import Decoded
 
     class JobDict(TypedDict):
@@ -30,7 +29,7 @@ if TYPE_CHECKING:
         expire_at: datetime | None
         retry_count: int
         state: TaskStateDict | None
-        queue: Queue
+        queue: str
 
     class TaskStateDict(TypedDict):
         identifier: UUID
@@ -110,7 +109,7 @@ class JobManager(models.Manager["Job"]):
     def get_queryset(self) -> JobQuerySet:
         return JobQuerySet(self.model)
 
-    def dequeue(self, applicable_queues: Iterable[Queue]) -> Job:
+    def dequeue(self, applicable_queues: Iterable[str]) -> Job:
         """
         Returns the first available job and raises Job.DoesNotExist if there aren't any.
 
@@ -180,7 +179,7 @@ class Job(BaseJob):
             "expire_at": self.expire_at,
             "retry_count": self.retry_count,
             "state": self.state.as_dict() if self.state else None,
-            "queue": self.queue,  # type: ignore[typeddict-item]
+            "queue": self.queue,
         }
 
 

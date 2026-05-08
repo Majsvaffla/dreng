@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from .constants import Delivery
-    from .queue import Queue
     from .task import ExceptionSequence, TaskFunction
     from .utils import Decoded
 
@@ -75,7 +74,7 @@ def task(
     delivery: Literal["at_least_once"],
     time_limit: datetime.timedelta,
     repeat_at: datetime.timedelta | datetime.time | None = None,
-    queue: Queue,
+    queue: str,
 ) -> Callable[[TaskFunction], StatelessTask]: ...
 
 
@@ -88,7 +87,7 @@ def task(
     delivery: Literal["at_most_once"],
     time_limit: datetime.timedelta,
     repeat_at: None = None,
-    queue: Queue,
+    queue: str,
 ) -> Callable[[TaskFunction], StatelessTask]: ...
 
 
@@ -101,7 +100,7 @@ def task(
     priority: Priority,
     delivery: Delivery,
     time_limit: datetime.timedelta,
-    queue: Queue,
+    queue: str,
 ) -> Callable[[TaskFunction], StatefulTask]: ...
 
 
@@ -114,7 +113,7 @@ def task(
     delivery: Delivery,
     time_limit: datetime.timedelta,
     repeat_at: datetime.timedelta | datetime.time | None = None,
-    queue: Queue,
+    queue: str,
 ) -> Callable[[TaskFunction], Task]:
     def decorator(f: TaskFunction) -> Task:
         if keep_state:

@@ -100,7 +100,9 @@ class TimeLimit:
             signal.alarm(0)
 
 
-def _as_encoded_non_built_in(d: TDecodedNonBuiltIn, encoder: Callable[[TDecodedNonBuiltIn], str]) -> EncodedNonBuiltIn:
+def _as_encoded_non_built_in[TDecodedNonBuiltIn: DecodedNonBuiltIn](
+    d: TDecodedNonBuiltIn, encoder: Callable[[TDecodedNonBuiltIn], str]
+) -> EncodedNonBuiltIn:
     class_name = d.__class__.__name__
     underlying_args = get_args(EncodedNonBuiltInType.__value__)
     assert class_name in underlying_args

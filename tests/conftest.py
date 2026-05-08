@@ -35,16 +35,16 @@ def mock_task(settings: Any) -> Iterator[TaskDecorator]:
         def decorator(task_function: TaskFunction) -> Task:
             if repeat_at is not None:
                 settings.DRENG_REPEATING_TASKS.add(f"{task_function.__module__}.{task_function.__name__}")
-            real_task = task(  # type: ignore[call-overload]
+            real_task = task(
                 priority=Priority.high,
-                delivery=delivery,
+                delivery=delivery,  # type: ignore[arg-type]
                 queue="tests",
                 time_limit=time_limit,
                 repeat_at=repeat_at,
                 **real_task_kwargs,
             )(task_function)
             task_function.__globals__[task_function.__name__] = real_task
-            return real_task  # type: ignore[no-any-return]
+            return real_task
 
         return decorator
 
@@ -65,5 +65,5 @@ def some_task(mock_task: TaskDecorator) -> Task:
 @pytest.fixture
 def worker() -> Worker:
     return Worker(
-        {"tests"},  # type: ignore[arg-type]
+        {"tests"},
     )
