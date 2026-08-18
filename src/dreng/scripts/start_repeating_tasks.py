@@ -1,14 +1,12 @@
+import argparse
 from datetime import timedelta
-
-import click
 
 from dreng import logging
 
 logger = logging.getLogger(__name__)
 
 
-@click.command
-def main() -> None:
+def launch() -> None:
     import django
     from django.conf import settings
     from django.core.exceptions import ImproperlyConfigured
@@ -31,5 +29,7 @@ def main() -> None:
             logger.info("Enqueued repeating task", extra={"task": task.import_path, "execute_at": execute_at})
 
 
-if __name__ == "__main__":
-    main()
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Start all tasks that have been marked as repeating.")
+    parser.parse_args()  # Enable --help even though it doesn't include much more than the description for now.
+    launch()
