@@ -3,3 +3,6 @@ dist/
 *.egg-info/
 .venv
 .*_cache/
+*.nix
+flake.lock
+.envrc
