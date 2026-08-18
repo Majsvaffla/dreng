@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import click
+import argparse
+
 from django import setup
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 
-@click.argument("queues", nargs=-1, required=True)
-@click.command
-def main(queues: set[str]) -> None:
+def launch(queues: set[str]) -> None:
     setup()
 
     from dreng.signals import on_worker_init
@@ -24,5 +23,8 @@ def main(queues: set[str]) -> None:
     Worker(queues).run()
 
 
-if __name__ == "__main__":
-    main()
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run all available tasks from the queues provided.")
+    parser.add_argument("queues", nargs="+")
+    args = parser.parse_args()
+    launch(set(args.queues))
