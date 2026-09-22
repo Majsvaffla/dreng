@@ -10,9 +10,11 @@ from datetime import timedelta
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Literal, Protocol, TypedDict, TypeIs, TypeVar, assert_never, get_args
 
+import django.tasks
 from django.utils.module_loading import import_string
 
 from . import logging
+from .decorators import StatelessTask
 from .exceptions import TimeLimitReached
 
 __all__ = ["Decoded", "JSONDecoder", "JSONEncoder", "TimeLimit", "get_claim_count_cache_key", "import_task"]
@@ -56,6 +58,11 @@ class TimeLimit:
     class __DangerouslyExceedMaximumTimeLimit__(timedelta):
         """
         Instances of this class can be passed to the task decorator argument to override time limit maximum.
+        """
+
+    class __DangerouslyDisableTimeLimit__(timedelta):
+        """
+        Instances of this class can be passed to the task decorator argument to disable time limits.
         """
 
     def _set_alarm(self, timeout: int, handler: AlarmHandler) -> None:
@@ -188,11 +195,10 @@ class JSONDecoder(json.JSONDecoder):
 
 
 def import_task(dotted_path: str) -> Task:
-    from .task import Task
-
     task = import_string(dotted_path)
-    assert isinstance(task, Task)
-    return task
+    if isinstance(task, django.tasks.Task):
+        return StatelessTask.from_django_task(task)
+    return task  # type: ignore[no-any-return]
 
 
 def get_claim_count_cache_key(job: Job) -> str:
