@@ -3,6 +3,15 @@ dist/
 *.egg-info/
 .venv
 .*_cache/
-*.nix
-flake.lock
 .envrc
+
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
