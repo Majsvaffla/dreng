@@ -110,7 +110,7 @@ typing = [
 
 [package.metadata]
 requires-dist = [
-    { name = "django", specifier = ">=5.2" },
+    { name = "django", specifier = ">=6" },
     { name = "psycopg2", specifier = ">=2.9.10" },
 ]
 

@@ -1,22 +1,27 @@
 import argparse
 from datetime import timedelta
 
+from django.tasks import DEFAULT_TASK_BACKEND_ALIAS
+
 from dreng import logging
 
 logger = logging.getLogger(__name__)
 
 
-def launch() -> None:
+def launch(*, backend_alias: str) -> None:
     import django
-    from django.conf import settings
     from django.core.exceptions import ImproperlyConfigured
+    from django.tasks import task_backends
 
     django.setup()
 
+    from dreng.backends import PostgreSQLBackend
     from dreng.models import Job
     from dreng.utils import import_task
 
-    repeating_tasks = (import_task(task) for task in settings.DRENG_REPEATING_TASKS)
+    backend = task_backends[backend_alias]
+    assert isinstance(backend, PostgreSQLBackend)
+    repeating_tasks = (import_task(task) for task in backend.repeating_tasks)
 
     for task in repeating_tasks:
         if not task.is_repeating:
@@ -31,5 +36,6 @@ def launch() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Start all tasks that have been marked as repeating.")
-    parser.parse_args()  # Enable --help even though it doesn't include much more than the description for now.
-    launch()
+    parser.add_argument("--backend", dest="backend_alias", default=DEFAULT_TASK_BACKEND_ALIAS)
+    args = parser.parse_args()  # Enable --help even though it doesn't include much more than the description for now.
+    launch(backend_alias=args.backend_alias)

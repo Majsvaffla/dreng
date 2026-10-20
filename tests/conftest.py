@@ -5,7 +5,9 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 
 import pytest
+from django.tasks import DEFAULT_TASK_BACKEND_ALIAS, DEFAULT_TASK_QUEUE_NAME, task_backends
 
+from dreng.backends import PostgreSQLBackend
 from dreng.constants import Priority
 from dreng.decorators import task
 from dreng.utils import TimeLimit
@@ -22,8 +24,10 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture
-def mock_task(settings: Any) -> Iterator[TaskDecorator]:
-    settings.DRENG_DEFAULT_TIME_LIMITS_BY_QUEUE["tests"] = TimeLimit(max=timedelta(seconds=2), excessive_time_factor=2)
+def mock_task(backend: PostgreSQLBackend) -> Iterator[TaskDecorator]:
+    backend.default_time_limits_by_queue[DEFAULT_TASK_QUEUE_NAME] = TimeLimit(
+        max=timedelta(seconds=2), excessive_time_factor=2
+    )
 
     def wrapper(
         *,
@@ -34,11 +38,11 @@ def mock_task(settings: Any) -> Iterator[TaskDecorator]:
     ) -> TaskDecoratorWrapper:
         def decorator(task_function: TaskFunction) -> Task:
             if repeat_at is not None:
-                settings.DRENG_REPEATING_TASKS.add(f"{task_function.__module__}.{task_function.__name__}")
+                backend.repeating_tasks.add(f"{task_function.__module__}.{task_function.__name__}")
             real_task = task(
                 priority=Priority.high,
                 delivery=delivery,  # type: ignore[arg-type]
-                queue="tests",
+                queue=DEFAULT_TASK_QUEUE_NAME,
                 time_limit=time_limit,
                 repeat_at=repeat_at,
                 **real_task_kwargs,
@@ -50,7 +54,7 @@ def mock_task(settings: Any) -> Iterator[TaskDecorator]:
 
     yield wrapper
 
-    del settings.DRENG_DEFAULT_TIME_LIMITS_BY_QUEUE["tests"]
+    del backend.default_time_limits_by_queue[DEFAULT_TASK_QUEUE_NAME]
 
 
 @pytest.fixture
@@ -63,7 +67,15 @@ def some_task(mock_task: TaskDecorator) -> Task:
 
 
 @pytest.fixture
-def worker() -> Worker:
+def backend() -> PostgreSQLBackend:
+    default_task_backend = task_backends[DEFAULT_TASK_BACKEND_ALIAS]
+    assert isinstance(default_task_backend, PostgreSQLBackend)
+    return default_task_backend
+
+
+@pytest.fixture
+def worker(backend: PostgreSQLBackend) -> Worker:
     return Worker(
-        {"tests"},
+        {DEFAULT_TASK_QUEUE_NAME},
+        backend,
     )
