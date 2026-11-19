@@ -34,7 +34,8 @@ def mock_task(settings: Any) -> Iterator[TaskDecorator]:
     ) -> TaskDecoratorWrapper:
         def decorator(task_function: TaskFunction) -> Task:
             if repeat_at is not None:
-                settings.DRENG_REPEATING_TASKS.add(f"{task_function.__module__}.{task_function.__name__}")
+                # Object of type `TaskFunction` has no attribute `__name__`
+                settings.DRENG_REPEATING_TASKS.add(f"{task_function.__module__}.{task_function.__name__}")  # ty: ignore[unresolved-attribute]
             real_task = task(
                 priority=Priority.high,
                 delivery=delivery,  # type: ignore[arg-type]
@@ -43,7 +44,8 @@ def mock_task(settings: Any) -> Iterator[TaskDecorator]:
                 repeat_at=repeat_at,
                 **real_task_kwargs,
             )(task_function)
-            task_function.__globals__[task_function.__name__] = real_task
+            # Object of type `TaskFunction` has no attribute `__name__`
+            task_function.__globals__[task_function.__name__] = real_task  # ty: ignore[unresolved-attribute]
             return real_task
 
         return decorator

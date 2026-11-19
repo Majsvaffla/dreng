@@ -14,10 +14,6 @@ from __future__ import annotations
 
 from datetime import timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from dreng.queue import Queue
 
 from dreng.utils import TimeLimit
 
@@ -142,7 +138,7 @@ DRENG_QUEUES = [
     "tests",
 ]
 DRENG_REPEATING_TASKS: set[str] = set()
-DRENG_DEFAULT_TIME_LIMITS_BY_QUEUE: dict[Queue, TimeLimit] = {
+DRENG_DEFAULT_TIME_LIMITS_BY_QUEUE: dict[str, TimeLimit] = {
     # Dict entry 0 has incompatible type "Literal['tests']": "TimeLimit"; expected "Literal['background', 'interactive']": "TimeLimit"  # noqa: E501
     "tests": TimeLimit(max=timedelta(seconds=2), excessive_time_factor=2),  # type: ignore[dict-item]
 }

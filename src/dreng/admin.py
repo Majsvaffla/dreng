@@ -148,7 +148,10 @@ def rerun_failed_job(modeladmin: FailedJobAdmin, request: HttpRequest, queryset:
     messages.info(request, f"{len(queryset)} tasks have been enqueued.")
 
 
-class FailedJobAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+type TModel = FailedJob
+
+
+class FailedJobAdmin(admin.ModelAdmin[TModel]):
     ordering = ["failed_at"]
     editable = False
     list_filter = ("task", "failure_reason", QueueFilter)
@@ -166,15 +169,15 @@ class FailedJobAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     def has_add_permission(self, request: HttpRequest) -> bool:
         return False
 
-    def has_change_permission(self, request: HttpRequest, obj: FailedJob | None = None) -> bool:
+    def has_change_permission(self, request: HttpRequest, obj: TModel | None = None) -> bool:
         # Only allow change when responding to deletion since that will
         # redirect with filters, messages and everything to the changelist view.
-        return request.method == "POST" and obj is not None and request.path == reverse("admin:dreng", args=[obj.id])
+        return request.method == "POST" and obj is not None and request.path == reverse("admin:dreng", args=[obj.pk])
 
-    def has_delete_permission(self, request: HttpRequest, obj: FailedJob | None = None) -> bool:
+    def has_delete_permission(self, request: HttpRequest, obj: TModel | None = None) -> bool:
         return True
 
-    def get_list_display(self, request: HttpRequest) -> list[str | Callable[[FailedJob], str | bool]]:
+    def get_list_display(self, request: HttpRequest) -> list[str | Callable[[TModel], str | bool]]:
         return [
             failed_at,
             "task",
@@ -183,7 +186,7 @@ class FailedJobAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         ]
 
     def get_fields(
-        self, request: HttpRequest, job: FailedJob | None = None
+        self, request: HttpRequest, job: TModel | None = None
     ) -> (
         list[str | list[str] | tuple[str, ...] | tuple[()]]
         | tuple[str | list[str] | tuple[str, ...] | tuple[()], ...]
@@ -199,7 +202,7 @@ class FailedJobAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
             "state",
         ]
 
-    def delete_model(self, request: HttpRequest, job: FailedJob) -> None:
+    def delete_model(self, request: HttpRequest, job: TModel) -> None:
         logger.info("Delete failed job manually", extra={"failed_job": job.as_dict()})
         return super().delete_model(request, job)
 

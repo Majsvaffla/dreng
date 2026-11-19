@@ -59,8 +59,8 @@ class Test_run_available_tasks:
 
         assert not Job.objects.exists()
 
-        # error: "EnqueuedTask" has no attribute "state_identifier"  [attr-defined]
-        state = TaskState.objects.get(identifier=enqueued_task.state_identifier)  # type: ignore[attr-defined]
+        # Object of type `EnqueuedTask` has no attribute `state_identifier`
+        state = TaskState.objects.get(identifier=enqueued_task.state_identifier)  # ty: ignore[unresolved-attribute]
         assert state.status == STATUS_SUCCESS
         assert state.data == {"some": "data"}
 
@@ -74,8 +74,8 @@ class Test_run_available_tasks:
 
         assert not Job.objects.exists()
 
-        # error: "EnqueuedTask" has no attribute "state_identifier"  [attr-defined]
-        state = TaskState.objects.get(identifier=enqueued_task.state_identifier)  # type: ignore[attr-defined]
+        # Object of type `EnqueuedTask` has no attribute `state_identifier`
+        state = TaskState.objects.get(identifier=enqueued_task.state_identifier)  # ty: ignore[unresolved-attribute]
         assert state.status == STATUS_FAILURE
         assert state.data is None
 
@@ -90,10 +90,10 @@ class Test_run_available_tasks:
         assert not Job.objects.exists()
         failed_job = FailedJob.objects.get(task="tests.worker.stateful_task_that_throws")
         assert failed_job.failure_reason == "exception"
-        assert failed_job.job_id == enqueued_task.job.id
+        assert failed_job.job_id == enqueued_task.job.pk
 
-        # error: "EnqueuedTask" has no attribute "state_identifier"  [attr-defined]
-        state = TaskState.objects.get(identifier=enqueued_task.state_identifier)  # type: ignore[attr-defined]
+        # Object of type `EnqueuedTask` has no attribute `state_identifier`
+        state = TaskState.objects.get(identifier=enqueued_task.state_identifier)  # ty: ignore[unresolved-attribute]
         assert state.status == STATUS_FAILURE
         assert state.data is None
 
@@ -118,7 +118,7 @@ class Test_run_available_tasks:
         assert not Job.objects.exists()
         failed_job = FailedJob.objects.get(task="tests.worker.stateless_task_that_throws")
         assert failed_job.failure_reason == "exception"
-        assert failed_job.job_id == enqueued_task.job.id
+        assert failed_job.job_id == enqueued_task.job.pk
 
     def test_exception(self, worker: Worker) -> None:
         class FatalError(Exception):
@@ -143,7 +143,7 @@ class Test_run_available_tasks:
         assert not Job.objects.exists()
 
         [expiry_record] = (r for r in caplog.records if r.message == f"Job {job} has expired.")
-        assert expiry_record.job["expire_at"] == expire_at  # type: ignore[attr-defined]
+        assert expiry_record.job["expire_at"] == expire_at
 
     def test_retrying_task(self, worker: Worker, mock_task: TaskDecorator, caplog: pytest.LogCaptureFixture) -> None:
         class RetryError(Exception):
@@ -158,7 +158,7 @@ class Test_run_available_tasks:
         worker.run_available_tasks()
 
         retried_job = Job.objects.get(task="tests.worker.retrying_task")
-        assert job.id != retried_job.id
+        assert job.pk != retried_job.pk
         assert retried_job.retry_count == 1
         assert retried_job.execute_at > job.execute_at
 
@@ -167,10 +167,10 @@ class Test_run_available_tasks:
         [expiry_record] = (
             r for r in caplog.records if r.message == f"Job {job} got retry exception. A new job will retry."
         )
-        assert expiry_record.old_job["retry_count"] == 0  # type: ignore[attr-defined]
-        assert expiry_record.new_job["retry_count"] == 1  # type: ignore[attr-defined]
-        assert expiry_record.exception_type == RetryError  # type: ignore[attr-defined]
-        assert expiry_record.exception_reason == "Retry or the test won't pass."  # type: ignore[attr-defined]
+        assert expiry_record.old_job["retry_count"] == 0
+        assert expiry_record.new_job["retry_count"] == 1
+        assert expiry_record.exception_type == RetryError
+        assert expiry_record.exception_reason == "Retry or the test won't pass."
 
 
 @pytest.mark.django_db(transaction=True)
@@ -200,7 +200,7 @@ def test_task_that_exceeds_its_time_limit(
     assert not Job.objects.exists()
     failed_job = FailedJob.objects.get(task="tests.worker.task_that_exceeds_its_time_limit")
     assert failed_job.failure_reason == "exception"
-    assert failed_job.job_id == enqueued_task.job.id
+    assert failed_job.job_id == enqueued_task.job.pk
 
 
 @pytest.mark.django_db(transaction=True)
@@ -245,7 +245,7 @@ class Test_delivery:
         assert not Job.objects.exists()
         failed_job = FailedJob.objects.get(task="tests.worker.atomic_task")
         assert failed_job.failure_reason == "exception"
-        assert failed_job.job_id == job.id == enqueued_task.job.id
+        assert failed_job.job_id == job.pk == enqueued_task.job.pk
 
         # The task raises an exception, causing a rollback, thus the TaskState is never committed to the database.
         assert not TaskState.objects.exists()
@@ -267,7 +267,7 @@ class Test_delivery:
         assert not Job.objects.exists()
         failed_job = FailedJob.objects.get(task="tests.worker.non_atomic_task")
         assert failed_job.failure_reason == "exception"
-        assert failed_job.job_id == job.id == enqueued_task.job.id
+        assert failed_job.job_id == job.pk == enqueued_task.job.pk
 
         # The task raises an exception but causes no rollback since database operations are committed instantly.
         assert TaskState.objects.get().pk == task_state_pk
@@ -286,7 +286,7 @@ class Test_delivery:
             # Pretend that stateless_task was killed by OS while running,
             # for example out of memory, thus not marked as failed.
             job.save(force_insert=True)
-            FailedJob.objects.get(job_id=job.id).delete()
+            FailedJob.objects.get(job_id=job.pk).delete()
 
         cache_key = get_claim_count_cache_key(job)
         assert cache.get(cache_key) == CLAIM_COUNT_LIMIT
@@ -299,7 +299,7 @@ class Test_delivery:
         failed_job = FailedJob.objects.get()
         assert cache.get(cache_key) == CLAIM_COUNT_LIMIT
         assert failed_job.failure_reason == "claim_count_limit_reached"
-        assert failed_job.job_id == job.id
+        assert failed_job.job_id == job.pk
         [log_record] = (r for r in caplog.records if r.message == f"Job {job} hit claim count limit.")
         assert log_record.levelno == logging.WARNING
 
@@ -333,7 +333,7 @@ def test_repeat_at(
         assert worker.run_once() == "did_dequeue_job"
         repeating_job = Job.objects.get()
 
-    assert initial_job.id != repeating_job.id
+    assert initial_job.pk != repeating_job.pk
     assert initial_job.task == repeating_job.task
     assert repeating_job.execute_at == expected_execute_at
 

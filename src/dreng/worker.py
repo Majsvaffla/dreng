@@ -72,7 +72,7 @@ def _set_failed(job: Job, reason: JobFailureReason) -> None:
         state=job.state,
         failed_at=timezone.now(),
         failure_reason=reason,
-        job_id=job.id,
+        job_id=job.pk,
     )
 
 
