@@ -373,7 +373,7 @@ def test_unable_to_import_task(worker: Worker) -> None:
         task="not_importable_task",
         queue="tests",
         execute_at=initial_execute_at,
-        args=[],
+        args={},
         kwargs={},
     )
     with time_machine.travel(datetime.datetime(2025, 4, 4, tzinfo=ZoneInfo("Europe/Stockholm")), tick=False):

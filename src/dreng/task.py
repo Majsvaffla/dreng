@@ -35,10 +35,10 @@ if TYPE_CHECKING:
         state: NotRequired[TaskState]
         status: _CalledStatus
 
-    JobArgs = Mapping[str, Decoded]
-    JobArgsSequence = (
-        Sequence[JobArgs]
-        # Return type of models.QuerySet.values is TypedDict[...] thus we can't use the JobArgs type here.
+    JobKwargs = Mapping[str, Decoded]
+    JobKwargsSequence = (
+        Sequence[JobKwargs]
+        # Return type of models.QuerySet.values is TypedDict[...] thus we can't use the JobKwargs type here.
         | models.QuerySet[models.Model, Mapping[str, Any]]
     )
 
@@ -95,7 +95,7 @@ class Task:
                 settings.DRENG_DEFAULT_TIME_LIMITS_BY_QUEUE[self.queue].as_context_manager(self, job, self.time_limit)
             )
             before_task_run.send("dreng.task", job=job, task=self, stack=stack)
-            return self._task_function(**job.args)
+            return self._task_function(**job.args, **job.kwargs)
 
     def __inner_call__(self, job: Job) -> _CalledResult:
         if job.expire_at and job.expire_at < timezone.now():
@@ -119,7 +119,7 @@ class Task:
                 retry_count=new_retry_count,
                 expire_at=job.expire_at,
                 state=job.state,
-                args=job.args,
+                kwargs={**job.args, **job.kwargs},
             )
             logger.log(
                 logging.WARNING if self._warn_after_retries == new_retry_count else logging.INFO,
@@ -171,7 +171,7 @@ class Task:
 
     def _create_job(
         self,
-        args: JobArgs,
+        kwargs: JobKwargs,
         *,
         execute_at: datetime.datetime | None = None,
         expire_at: datetime.datetime | None = None,
@@ -182,8 +182,8 @@ class Task:
 
         job = Job(
             task=self.import_path,
-            args=args,
-            kwargs={},
+            args={},
+            kwargs=kwargs,
             priority=self._priority.value,
             expire_at=expire_at,
             retry_count=retry_count,
@@ -196,14 +196,14 @@ class Task:
 
     def _enqueue(
         self,
-        args: JobArgs,
+        kwargs: JobKwargs,
         *,
         execute_at: datetime.datetime | None = None,
         expire_at: datetime.datetime | None = None,
         state: TaskState | None = None,
         retry_count: int = 0,
     ) -> Job:
-        job = self._create_job(args, execute_at=execute_at, expire_at=expire_at, state=state, retry_count=retry_count)
+        job = self._create_job(kwargs, execute_at=execute_at, expire_at=expire_at, state=state, retry_count=retry_count)
         job.save(using="default")
         return job
 
@@ -212,27 +212,27 @@ class Task:
         *,
         execute_at: datetime.datetime | None = None,
         expire_at: datetime.datetime | None = None,
-        **job_args: Decoded,
+        **job_kwargs: Decoded,
     ) -> EnqueuedTask:
         raise NotImplementedError
 
     def enqueue_and_execute_evenly(
         self,
-        job_args: JobArgsSequence,
+        job_kwargs: JobKwargsSequence,
         span: timedelta,
     ) -> None:
-        if len(job_args) == 0:
+        if len(job_kwargs) == 0:
             return
         from .models import Job
 
-        interval = span / len(job_args)
+        interval = span / len(job_kwargs)
         now_ = timezone.now()
         Job.objects.bulk_create(
-            self._create_job(args, execute_at=now_ + index * interval, expire_at=None)
-            for index, args in enumerate(job_args)
+            self._create_job(kwargs, execute_at=now_ + index * interval, expire_at=None)
+            for index, kwargs in enumerate(job_kwargs)
         )
 
-    def bulk_enqueue(self, job_args: Iterable[JobArgs] | JobArgsSequence) -> list[Job]:
+    def bulk_enqueue(self, job_kwargs: Iterable[JobKwargs] | JobKwargsSequence) -> list[Job]:
         from .models import Job
 
-        return Job.objects.bulk_create(self._create_job(args) for args in job_args)
+        return Job.objects.bulk_create(self._create_job(kwargs) for kwargs in job_kwargs)
