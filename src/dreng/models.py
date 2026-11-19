@@ -146,6 +146,7 @@ class JobManager(models.Manager["Job"]):
 class BaseJob(models.Model):
     task = models.CharField(max_length=255)
     args = models.JSONField(encoder=JSONEncoder, decoder=JSONDecoder)
+    kwargs = models.JSONField(encoder=JSONEncoder, decoder=JSONDecoder)
     state = models.OneToOneField(TaskState, on_delete=models.PROTECT, null=True)
 
     class Meta:

@@ -183,6 +183,7 @@ class Task:
         job = Job(
             task=self.import_path,
             args=args,
+            kwargs={},
             priority=self._priority.value,
             expire_at=expire_at,
             retry_count=retry_count,
