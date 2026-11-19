@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 def test_bulk_enqueue(some_task: Task) -> None:
     some_task.bulk_enqueue({"i": i} for i in range(4))
     assert {j.execute_at for j in Job.objects.all()} == {j.execute_at if (j := Job.objects.first()) else None}
-    assert {j.args["i"] for j in Job.objects.all()} == {0, 1, 2, 3}
+    assert {j.kwargs["i"] for j in Job.objects.all()} == {0, 1, 2, 3}
 
 
 @pytest.mark.parametrize(

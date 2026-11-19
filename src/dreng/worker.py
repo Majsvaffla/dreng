@@ -68,7 +68,7 @@ def _log_claim_count_limit_reached(job: Job, claim_count: int) -> None:
 def _set_failed(job: Job, reason: JobFailureReason) -> None:
     FailedJob.objects.create(
         task=job.task,
-        args=job.args,
+        kwargs=job.kwargs,
         state=job.state,
         failed_at=timezone.now(),
         failure_reason=reason,

@@ -93,7 +93,7 @@ class JobAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         priority,  # type: ignore[list-item]
         "created_at",
         "task",
-        "args",
+        "kwargs",
         queue,  # type: ignore[list-item]
     ]
 
@@ -128,7 +128,7 @@ class JobAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
             "execute_at",
             priority,  # type: ignore[list-item]
             "task",
-            "args",
+            "kwargs",
             queue,  # type: ignore[list-item]
         ]
 
@@ -156,7 +156,7 @@ class FailedJobAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     actions = [rerun_failed_job]
     readonly_fields = [
         "task",
-        "args",
+        "kwargs",
         "state",
         "failed_at",
         "failure_reason",
@@ -193,7 +193,7 @@ class FailedJobAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         return [
             "failed_at",
             "task",
-            "args",
+            "kwargs",
             "failure_reason",
             "job_id",
             "state",
