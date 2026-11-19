@@ -8,10 +8,14 @@ from django.contrib.postgres.functions import TransactionNow
 __all__ = ["INFO", "WARNING", "getLogger"]
 
 
-class JobKwargsFilter(logging.Filter):
+class JobArgumentsFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> logging.LogRecord:
-        if (job := getattr(record, "job", {})) and isinstance(job, dict) and "kwargs" in job:
-            job["kwargs"] = str(job["kwargs"])[:1000]  # Avoid "overflowing" logging infrastructure.
+        if (job := getattr(record, "job", {})) and isinstance(job, dict):
+            # Avoid "overflowing" logging infrastructure:
+            if "args" in job:
+                job["args"] = str(job["args"])[:1000]
+            if "kwargs" in job:
+                job["kwargs"] = str(job["kwargs"])[:1000]
         return record
 
 
@@ -33,5 +37,5 @@ class TransactionNowAdapter(logging.LoggerAdapter[logging.Logger]):
 
 def getLogger(name: str = "dreng") -> logging.LoggerAdapter[logging.Logger]:
     logger = logging.getLogger(name)
-    logger.addFilter(JobKwargsFilter())
+    logger.addFilter(JobArgumentsFilter())
     return TransactionNowAdapter(logger, merge_extra=True)

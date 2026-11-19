@@ -25,6 +25,7 @@ if TYPE_CHECKING:
         execute_at: datetime | TransactionNow
         priority: int
         task: str
+        args: list[Decoded]
         kwargs: dict[str, Decoded]
         expire_at: datetime | None
         retry_count: int
@@ -40,6 +41,7 @@ if TYPE_CHECKING:
     class FailedJobDict(TypedDict):
         id: int
         task: str
+        args: list[Decoded]
         kwargs: Mapping[str, Decoded]
         failed_at: datetime
         failure_reason: JobFailureReason
@@ -176,7 +178,8 @@ class Job(BaseJob):
             "execute_at": self.execute_at,
             "priority": self.priority,
             "task": self.task,
-            "kwargs": {**self.args, **self.kwargs},
+            "args": self.args,
+            "kwargs": self.kwargs,
             "expire_at": self.expire_at,
             "retry_count": self.retry_count,
             "state": self.state.as_dict() if self.state else None,
@@ -204,13 +207,14 @@ class FailedJob(BaseJob):
     objects = FailedJobManager()
 
     def rerun(self) -> None:
-        import_task(self.task).enqueue(**self.args, **self.kwargs)
+        import_task(self.task).enqueue(*self.args, **self.kwargs)
 
     def as_dict(self) -> FailedJobDict:
         return {
             "id": self.pk,
             "task": self.task,
-            "kwargs": {**self.args, **self.kwargs},
+            "args": self.args,
+            "kwargs": self.kwargs,
             "failed_at": self.failed_at,
             "failure_reason": self.failure_reason,  # type: ignore[typeddict-item]
             "job_id": self.job_id,

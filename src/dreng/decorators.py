@@ -37,7 +37,7 @@ class StatelessEnqueuedTask(EnqueuedTask):
 class StatefulTask(Task):
     def enqueue(
         self,
-        *,
+        *task_args: Decoded,
         execute_at: datetime.datetime | None = None,
         expire_at: datetime.datetime | None = None,
         **task_kwargs: Decoded,
@@ -46,6 +46,7 @@ class StatefulTask(Task):
 
         state = TaskState.objects.create(status=STATUS_PENDING)
         job = self._enqueue(
+            task_args,
             task_kwargs,
             execute_at=execute_at,
             expire_at=expire_at,
@@ -57,12 +58,12 @@ class StatefulTask(Task):
 class StatelessTask(Task):
     def enqueue(
         self,
-        *,
+        *task_args: Decoded,
         execute_at: datetime.datetime | None = None,
         expire_at: datetime.datetime | None = None,
         **task_kwargs: Decoded,
     ) -> StatelessEnqueuedTask:
-        return StatelessEnqueuedTask(self._enqueue(task_kwargs, execute_at=execute_at, expire_at=expire_at))
+        return StatelessEnqueuedTask(self._enqueue(task_args, task_kwargs, execute_at=execute_at, expire_at=expire_at))
 
 
 @overload
