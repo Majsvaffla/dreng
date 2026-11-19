@@ -374,6 +374,7 @@ def test_unable_to_import_task(worker: Worker) -> None:
         queue="tests",
         execute_at=initial_execute_at,
         args=[],
+        kwargs={},
     )
     with time_machine.travel(datetime.datetime(2025, 4, 4, tzinfo=ZoneInfo("Europe/Stockholm")), tick=False):
         assert worker.run_once() == "unable_to_import_task"
