@@ -11,8 +11,8 @@ from tests.helpers import datetime_utc
     ("extra", "expected_job"),
     [
         (
-            {"job": {"some_number": 123, "args": [1, 2, 3]}},
-            {"some_number": 123, "args": "[1, 2, 3]"},
+            {"job": {"some_number": 123, "kwargs": [1, 2, 3]}},
+            {"some_number": 123, "kwargs": "[1, 2, 3]"},
         ),
         (
             {},
@@ -37,12 +37,12 @@ from tests.helpers import datetime_utc
             {"created_at": None, "execute_at": None},
         ),
         (
-            {"job": {"args": {}}},
-            {"args": r"{}"},
+            {"job": {"kwargs": {}}},
+            {"kwargs": r"{}"},
         ),
     ],
 )
-def test_JobArgsFilter(caplog: pytest.LogCaptureFixture, extra: dict[str, Any], expected_job: dict[str, Any]) -> None:
+def test_JobKwargsFilter(caplog: pytest.LogCaptureFixture, extra: dict[str, Any], expected_job: dict[str, Any]) -> None:
     logger = logging.getLogger("tests")
     logger.info(
         "Working hard or hardly working?",
