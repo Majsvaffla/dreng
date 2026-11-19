@@ -106,8 +106,10 @@ def _as_encoded_non_built_in[TDecodedNonBuiltIn: DecodedNonBuiltIn](
     class_name = d.__class__.__name__
     underlying_args = get_args(EncodedNonBuiltInType.__value__)
     assert class_name in underlying_args
-    return {
-        "__type__": class_name,  # type: ignore[typeddict-item]
+    # Return type does not match returned value
+    return {  # ty: ignore[invalid-return-type]
+        # Invalid argument to key "__type__" with declared type `EncodedNonBuiltInType` on TypedDict `EncodedNonBuiltIn`
+        "__type__": class_name,  # ty: ignore[invalid-argument-type]
         "__value__": encoder(d),
     }
 
@@ -196,4 +198,4 @@ def import_task(dotted_path: str) -> Task:
 
 
 def get_claim_count_cache_key(job: Job) -> str:
-    return f"dreng_job_dequeue_count_{job.id}"
+    return f"dreng_job_dequeue_count_{job.pk}"

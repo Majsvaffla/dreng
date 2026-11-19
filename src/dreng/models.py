@@ -77,7 +77,7 @@ class TaskState(models.Model):
 
     def save(
         self,
-        force_insert: bool | tuple[models.base.ModelBase, ...] = False,
+        force_insert: bool = False,
         force_update: bool = False,
         using: str | None = None,
         update_fields: Iterable[str] | None = None,
@@ -170,7 +170,7 @@ class Job(BaseJob):
 
     def as_dict(self) -> JobDict:
         return {
-            "id": self.id,
+            "id": self.pk,
             "created_at": self.created_at,
             "execute_at": self.execute_at,
             "priority": self.priority,
@@ -211,7 +211,7 @@ class FailedJob(BaseJob):
             "task": self.task,
             "args": self.args,
             "failed_at": self.failed_at,
-            "failure_reason": self.failure_reason,  # type: ignore[typeddict-item]
+            "failure_reason": self.failure_reason,
             "job_id": self.job_id,
             "state": self.state.as_dict() if self.state else None,
         }

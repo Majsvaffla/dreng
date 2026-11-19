@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     JobArgsSequence = (
         Sequence[JobArgs]
         # Return type of models.QuerySet.values is TypedDict[...] thus we can't use the JobArgs type here.
-        | models.QuerySet[models.Model, Mapping[str, Any]]
+        | models.QuerySet[models.Model]
     )
 
 logger = logging.getLogger(__name__)
@@ -79,7 +79,8 @@ class Task:
         self.delivery = delivery
         self._repeat_at = repeat_at
         self.queue = queue
-        self.import_path = f"{self._task_function.__module__}.{self._task_function.__name__}"
+        # Object of type `TaskFunction` has no attribute `__name__`
+        self.import_path = f"{self._task_function.__module__}.{self._task_function.__name__}"  # ty: ignore[unresolved-attribute]
 
         if repeat_at is not None:
             if delivery == "at_most_once":
