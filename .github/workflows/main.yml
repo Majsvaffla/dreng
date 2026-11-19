@@ -35,7 +35,7 @@ jobs:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/dreng_tests
           POSTGRES_PORT: 5432
 
-  mypy:
+  ty:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -47,7 +47,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: ${{ matrix.python-version }}
-      - run: uv run mypy
+      - run: uv run ty
 
   ruff-format:
     runs-on: ubuntu-latest

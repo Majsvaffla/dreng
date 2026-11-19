@@ -15,4 +15,9 @@
 
   services.postgres.enable = true;
   env.LD_LIBRARY_PATH = lib.makeLibraryPath [ pkgs.libpq ];
+
+  packages = with pkgs; [
+    ruff
+    ty
+  ];
 }

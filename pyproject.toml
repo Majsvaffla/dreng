@@ -40,22 +40,12 @@ tests = [
   "time-machine",
 ]
 typing = [
-  "django-stubs",
-  "mypy",
+    "django-types>=0.24.0",
+    "ty>=0.0.107",
 ]
 
-[tool.mypy]
-disallow_incomplete_defs = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
-packages = ["dreng", "tests"]
-plugins = ["mypy_django_plugin.main"]
-strict = true
-strict_equality = true
-warn_unused_ignores = true
-
-[tool.django-stubs]
-django_settings_module = "example_django_project.settings"
+[tool.ty.src]
+exclude = ["src/dreng/migrations"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests_django_project.settings.postgresql"
